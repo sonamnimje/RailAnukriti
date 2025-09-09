@@ -1,0 +1,10 @@
+# Ignore node_modules and other generated files
+node_modules/
+*.db
+*.sqlite3
+.env
+__pycache__/
+*.pyc
+.DS_Store
+frontend/node_modules/
+backend/app/rail.db
