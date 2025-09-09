@@ -7,9 +7,9 @@ from datetime import datetime, timezone
 
 from .users import require_role
 from app.db.session import get_db
-from app.db.models import TrainPosition, TrainSchedule
+from app.db.models import TrainPosition as TrainPositionModel, TrainSchedule as TrainScheduleModel
 
-router = APIRouter(dependencies=[Depends(require_role("controller", "admin"))])
+router = APIRouter()
 
 
 class TrainPosition(BaseModel):
@@ -40,7 +40,7 @@ def ingest_positions(batch: List[TrainPosition], db: Session = Depends(get_db)) 
 	rows = []
 	for p in batch:
 		rows.append(
-			app.db.models.TrainPosition(
+			TrainPositionModel(
 				train_id=p.id,
 				section_id=p.section_id,
 				planned_block_id=p.planned_block_id,
@@ -58,7 +58,7 @@ def ingest_positions(batch: List[TrainPosition], db: Session = Depends(get_db)) 
 @router.post("/schedules")
 def ingest_schedules(batch: List[TrainScheduleEvent], db: Session = Depends(get_db)) -> dict:
 	for e in batch:
-		row = app.db.models.TrainSchedule(
+		row = TrainScheduleModel(
 			train_id=e.train_id,
 			station_id=e.station_id,
 			planned_arrival=datetime.fromtimestamp(e.planned_arrival_ts, tz=timezone.utc),
@@ -71,8 +71,8 @@ def ingest_schedules(batch: List[TrainScheduleEvent], db: Session = Depends(get_
 
 
 @router.get("/positions")
-def get_positions(db: Session = Depends(get_db)) -> List[dict]:
-	rows = db.query(app.db.models.TrainPosition).order_by(app.db.models.TrainPosition.timestamp.desc()).limit(200).all()
+def get_positions(db: Session = Depends(get_db), user = Depends(require_role("controller", "admin"))) -> List[dict]:
+	rows = db.query(TrainPositionModel).order_by(TrainPositionModel.timestamp.desc()).limit(200).all()
 	return [
 		{
 			"train_id": r.train_id,
@@ -89,7 +89,7 @@ def get_positions(db: Session = Depends(get_db)) -> List[dict]:
 
 @router.get("/schedules")
 def get_schedules(db: Session = Depends(get_db)) -> List[dict]:
-	rows = db.query(app.db.models.TrainSchedule).order_by(app.db.models.TrainSchedule.id.desc()).limit(500).all()
+	rows = db.query(TrainScheduleModel).order_by(TrainScheduleModel.id.desc()).limit(500).all()
 	return [
 		{
 			"id": r.id,

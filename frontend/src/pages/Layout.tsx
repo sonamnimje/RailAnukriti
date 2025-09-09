@@ -20,7 +20,7 @@ export default function Layout() {
 				</div>
 				<nav className="flex items-center gap-4 text-lg justify-center">
 					<NavLink to="/" end className={({ isActive }) => isActive ? 'font-bold bg-blue-600 text-white rounded px-3 py-2 shadow transition' : 'text-blue-700 hover:bg-blue-100 hover:text-blue-900 rounded px-3 py-2 transition'}>Home</NavLink>
-					<NavLink to="/app" end className={({ isActive }) => isActive ? 'font-bold bg-blue-600 text-white rounded px-3 py-2 shadow transition' : 'text-blue-700 hover:bg-blue-100 hover:text-blue-900 rounded px-3 py-2 transition'}>Dashboard</NavLink>
+					<NavLink to="/app/dashboard" className={({ isActive }) => isActive ? 'font-bold bg-blue-600 text-white rounded px-3 py-2 shadow transition' : 'text-blue-700 hover:bg-blue-100 hover:text-blue-900 rounded px-3 py-2 transition'}>Dashboard</NavLink>
 					<NavLink to="/app/logs" className={({ isActive }) => isActive ? 'font-bold bg-blue-600 text-white rounded px-3 py-2 shadow transition' : 'text-blue-700 hover:bg-blue-100 hover:text-blue-900 rounded px-3 py-2 transition'}>Logs</NavLink>
 					<NavLink to="/app/simulation" className={({ isActive }) => isActive ? 'font-bold bg-blue-600 text-white rounded px-3 py-2 shadow transition' : 'text-blue-700 hover:bg-blue-100 hover:text-blue-900 rounded px-3 py-2 transition'}>Simulation</NavLink>
 					<NavLink to="/app/overrides" className={({ isActive }) => isActive ? 'font-bold bg-blue-600 text-white rounded px-3 py-2 shadow transition' : 'text-blue-700 hover:bg-blue-100 hover:text-blue-900 rounded px-3 py-2 transition'}>Overrides</NavLink>

@@ -54,12 +54,13 @@ export default function LogsPage() {
 
 	const formatTime = (timeStr?: string) => {
 		if (!timeStr) return '-'
-		return new Date(timeStr).toLocaleTimeString()
+		return new Date(timeStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 	}
 
 	const formatDelay = (delay?: number) => {
-		if (!delay || delay === 0) return 'On Time'
-		return `${delay} min`
+		if (delay === null || delay === undefined) return '-'
+		if (delay === 0) return '0m'
+		return `${delay > 0 ? '+' : ''}${delay}m`
 	}
 
 	const getStatusColor = (status?: string, delay?: number) => {
@@ -68,6 +69,14 @@ export default function LogsPage() {
 		if (status === 'cancelled') return 'text-gray-500'
 		if (status === 'arrived' || status === 'departed') return 'text-green-600'
 		return 'text-blue-600'
+	}
+
+	const getReadableStatus = (status?: string, delay?: number) => {
+		if (status === 'cancelled') return 'Cancelled'
+		if (status === 'arrived') return delay && delay > 0 ? 'Arrived Late' : 'On Time'
+		if (status === 'departed') return 'Departed'
+		if (status === 'delayed' || (delay !== undefined && delay > 0)) return 'Delayed'
+		return 'On Time'
 	}
 
 	const renderTimeline = () => {
@@ -244,39 +253,33 @@ export default function LogsPage() {
 
 					{viewMode === 'logs' && (
 						<div className="overflow-x-auto">
-					<table className="w-full text-sm">
+							<table className="w-full text-sm">
 								<thead className="bg-gray-100 border-b border-gray-300">
 									<tr>
 										<th className="text-left p-4 text-gray-700 font-semibold">Train ID</th>
 										<th className="text-left p-4 text-gray-700 font-semibold">Station</th>
-										<th className="text-left p-4 text-gray-700 font-semibold">Section</th>
-										<th className="text-left p-4 text-gray-700 font-semibold">Event Type</th>
-										<th className="text-left p-4 text-gray-700 font-semibold">Planned Time</th>
-										<th className="text-left p-4 text-gray-700 font-semibold">Actual Time</th>
+										<th className="text-left p-4 text-gray-700 font-semibold">Scheduled Arrival</th>
+										<th className="text-left p-4 text-gray-700 font-semibold">Actual Arrival</th>
 										<th className="text-left p-4 text-gray-700 font-semibold">Delay</th>
 										<th className="text-left p-4 text-gray-700 font-semibold">Status</th>
-							</tr>
-						</thead>
+										<th className="text-left p-4 text-gray-700 font-semibold">Platform</th>
+									</tr>
+								</thead>
 								<tbody className="divide-y divide-gray-200">
 									{logs.map((log) => (
 										<tr key={log.id} className="hover:bg-gray-50 transition-colors">
 											<td className="p-4 font-medium text-blue-600">{log.train_id}</td>
 											<td className="p-4 text-gray-800">{log.station_id}</td>
-											<td className="p-4 text-gray-500">{log.section_id}</td>
-											<td className="p-4 text-yellow-600 font-medium">{log.event_type}</td>
 											<td className="p-4 text-gray-600">{formatTime(log.planned_time)}</td>
 											<td className="p-4 text-gray-600">{formatTime(log.actual_time)}</td>
-											<td className={`p-4 font-medium ${getStatusColor(log.status, log.delay_minutes)}`}>
-												{formatDelay(log.delay_minutes)}
-											</td>
-											<td className={`p-4 font-medium ${getStatusColor(log.status, log.delay_minutes)}`}>
-												{log.status || 'Active'}
-											</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
+											<td className={`p-4 font-medium ${getStatusColor(log.status, log.delay_minutes)}`}>{formatDelay(log.delay_minutes)}</td>
+											<td className={`p-4 font-medium ${getStatusColor(log.status, log.delay_minutes)}`}>{getReadableStatus(log.status, log.delay_minutes)}</td>
+											<td className="p-4 text-gray-500">{log.platform || '-'}</td>
+										</tr>
+									))}
+								</tbody>
+							</table>
+						</div>
 					)}
 
 					{viewMode === 'timeline' && (

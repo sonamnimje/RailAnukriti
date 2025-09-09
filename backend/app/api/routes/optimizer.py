@@ -4,6 +4,8 @@ from typing import List, Optional, Dict, Any
 
 
 from .users import require_role
+from app.db.session import get_db
+from sqlalchemy.orm import Session
 
 router = APIRouter(dependencies=[Depends(require_role("controller", "admin"))])
 
@@ -31,10 +33,10 @@ class OptimizeResponse(BaseModel):
 
 
 @router.post("/optimize", response_model=OptimizeResponse)
-def optimize(req: OptimizeRequest) -> OptimizeResponse:
+def optimize(req: OptimizeRequest, db: Session = Depends(get_db)) -> OptimizeResponse:
 	from app.services.optimizer import optimizer_service
 
-	result = optimizer_service.optimize(req.model_dump())
+	result = optimizer_service.optimize(req.model_dump(), db)
 	recs = [
 		Recommendation(
 			train_id=r.get("train_id", ""),

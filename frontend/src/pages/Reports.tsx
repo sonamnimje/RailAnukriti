@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { fetchDelayTrends, fetchThroughput, fetchHotspots, fetchKpis, fetchOverrides } from '../lib/api'
+import { fetchDelayTrends, fetchThroughput, fetchHotspots, fetchKpis } from '../lib/api'
 
 type BarDatum = { label: string; value: number }
 
@@ -206,7 +206,6 @@ export default function ReportsPage() {
 		[3, 4, 2, 5, 4],
 	])
 	const [kpis, setKpis] = useState<{ throughput_per_hour?: number; avg_delay_minutes?: number; on_time_percentage?: number; congestion_index?: number }>({})
-	const [overrides, setOverrides] = useState<Array<{ id: string; controller_id: string; train_id: string; action: string; ai_action?: string; reason?: string; timestamp: number }>>([])
 	const [loading, setLoading] = useState<boolean>(false)
 	const [error, setError] = useState<string | null>(null)
 
@@ -216,12 +215,11 @@ export default function ReportsPage() {
 			setLoading(true)
 			setError(null)
 			try {
-				const [delay, thr, hot, kpiResp, overridesResp] = await Promise.all([
+				const [delay, thr, hot, kpiResp] = await Promise.all([
 					fetchDelayTrends(hours),
 					fetchThroughput(hours),
 					fetchHotspots(hours, 4, 5),
 					fetchKpis(),
-					fetchOverrides().catch(() => []),
 				])
 				if (isCancelled) return
 				setDelayLabels(delay.labels)
@@ -231,7 +229,6 @@ export default function ReportsPage() {
 				setHeatmapY(hot.yLabels)
 				setHeatmapData(hot.data)
 				setKpis(kpiResp)
-				if (Array.isArray(overridesResp)) setOverrides(overridesResp)
 			} catch (e: any) {
 				if (!isCancelled) setError(e?.message || 'Failed to load reports')
 			} finally {
@@ -344,38 +341,7 @@ export default function ReportsPage() {
 						<h3 className="font-semibold mb-4">Bottleneck Hotspots</h3>
 						<Heatmap data={heatmapData} xLabels={heatmapX} yLabels={heatmapY} />
 					</section>
-					<section className="rounded border border-gray-200 bg-white p-4 shadow-lg mt-6">
-						<h3 className="font-semibold mb-4">Overrides vs AI Decisions</h3>
-						<div className="overflow-auto">
-							<table className="w-full text-left border border-gray-200">
-								<thead className="bg-gray-50">
-									<tr>
-										<th className="p-2">Train</th>
-										<th className="p-2">AI Decision</th>
-										<th className="p-2">Override</th>
-										<th className="p-2">Reason</th>
-										<th className="p-2">Timestamp</th>
-									</tr>
-								</thead>
-								<tbody>
-									{overrides.length === 0 && (
-										<tr>
-											<td className="p-2 text-gray-500" colSpan={5}>No overrides found</td>
-										</tr>
-									)}
-									{overrides.map((o) => (
-										<tr key={o.id} className="border-t border-gray-200">
-											<td className="p-2">{o.train_id}</td>
-											<td className="p-2">{o.ai_action || '-'}</td>
-											<td className="p-2">{o.action}</td>
-											<td className="p-2">{o.reason || '-'}</td>
-											<td className="p-2">{new Date(o.timestamp).toLocaleString()}</td>
-										</tr>
-									))}
-								</tbody>
-							</table>
-						</div>
-					</section>
+					{/* Overrides vs AI Decisions section removed */}
 				</div>
 			</div>
 		</div>
