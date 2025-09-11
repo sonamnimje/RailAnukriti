@@ -1,11 +1,4 @@
 # 🚆 RailAnukriti – AI-Powered Smart Train Traffic Optimizer
-
-**Smart India Hackathon 2025 – Problem ID 25022**  
-**Title:** Maximizing Section Throughput Using AI-Powered Precise Train Traffic Control
-
----
-
-## 📌 Project Overview
 RailAnukriti is an AI-powered decision-support system for Indian Railways section controllers.  
 It optimizes train precedence, crossings, and platform allocation to maximize throughput and minimize delays.
 
