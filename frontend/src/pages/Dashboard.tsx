@@ -28,8 +28,8 @@ export default function DashboardPage() {
         const [kpiResp, posResp, recResp, timelineResp] = await Promise.all([
           fetchKpis().catch(() => null),
           fetchPositions().catch(() => []),
-          fetchRecommendations({ section_id: 'SEC-001', lookahead_minutes: 30 }).catch(() => ({ recommendations: [] as Recommendation[] } as any)),
-          fetchTimelineData({ section_id: 'SEC-001', hours: 6 }).catch(() => null)
+          fetchRecommendations({ section_id: 'S1', lookahead_minutes: 30 }).catch(() => ({ recommendations: [] as Recommendation[] } as any)),
+          fetchTimelineData({ section_id: 'S1', hours: 6 }).catch(() => null)
         ])
         if (cancelled) return
         setKpis(kpiResp)
@@ -169,6 +169,8 @@ export default function DashboardPage() {
         reason,
         timestamp: Date.now()
       })
+      // Remove the acted-on recommendation from the list
+      setRecs(prev => prev.filter(r => !(r.train_id === overrideModal.rec!.train_id && r.action === overrideModal.rec!.action)))
       setActionMsg(`Override applied for ${overrideModal.rec.train_id}`)
       setOverrideModal({ isOpen: false, rec: null })
       navigate('/app/dashboard')
@@ -201,7 +203,14 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 flex flex-col gap-6">
           <MapPanel positions={positions} />
           <section className="rounded-2xl border border-gray-200 bg-white p-4 shadow">
-            <TimelineChart data={timeline || mockTimelineData} height={280} />
+            <TimelineChart
+              data={(timeline && Object.keys(timeline.timeline || {}).length > 0) ? timeline : mockTimelineData}
+              height={380}
+              embedded
+              compact
+              showHeader={true}
+              showLegend={true}
+            />
           </section>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-6">

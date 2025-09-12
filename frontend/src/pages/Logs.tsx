@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fetchTrainLogs, fetchTrainSchedules, fetchTimelineData, fetchLogStats, type TrainLog, type TrainSchedule, type TimelineData, type LogStats } from '../lib/api'
-import TimelineChart from '../components/TimelineChart'
+import { fetchTrainLogs, fetchTrainSchedules, fetchLogStats, type TrainLog, type TrainSchedule, type LogStats } from '../lib/api'
 
 export default function LogsPage() {
 	const [logs, setLogs] = useState<TrainLog[]>([])
 	const [schedules, setSchedules] = useState<TrainSchedule[]>([])
-	const [timelineData, setTimelineData] = useState<TimelineData | null>(null)
 	const [stats, setStats] = useState<LogStats | null>(null)
 	const [error, setError] = useState<string | null>(null)
 	const [loading, setLoading] = useState(true)
@@ -14,7 +12,7 @@ export default function LogsPage() {
 	const [trainFilter, setTrainFilter] = useState('')
 	const [sectionFilter, setSectionFilter] = useState('')
 	const [timeFilter, setTimeFilter] = useState(24)
-	const [viewMode, setViewMode] = useState<'schedules' | 'logs' | 'timeline'>('schedules')
+	const [viewMode, setViewMode] = useState<'schedules' | 'logs'>('schedules')
 	const [statusFilter, setStatusFilter] = useState('')
 
 	useEffect(() => {
@@ -34,16 +32,14 @@ export default function LogsPage() {
 				limit: 100
 			}
 
-			const [logsResult, schedulesResult, timelineResult, statsResult] = await Promise.all([
+			const [logsResult, schedulesResult, statsResult] = await Promise.all([
 				fetchTrainLogs(params),
 				fetchTrainSchedules(params),
-				fetchTimelineData({ train_id: trainFilter || undefined, section_id: sectionFilter || undefined, hours: timeFilter }),
 				fetchLogStats(timeFilter)
 			])
 
 			setLogs(logsResult.logs)
 			setSchedules(schedulesResult.schedules)
-			setTimelineData(timelineResult)
 			setStats(statsResult)
 		} catch (e) {
 			setError(e instanceof Error ? e.message : 'Failed to load data')
@@ -79,37 +75,7 @@ export default function LogsPage() {
 		return 'On Time'
 	}
 
-	const renderTimeline = () => {
-		if (!timelineData) return <div className="text-gray-500">No timeline data available</div>
-		
-		const trains = Object.keys(timelineData.timeline)
-		if (trains.length === 0) return <div className="text-gray-500">No train movements in selected time range</div>
-
-		return (
-			<div className="space-y-4">
-				{trains.map(trainId => (
-					<div key={trainId} className="border border-gray-300 rounded-lg p-4 bg-gray-50">
-						<h4 className="font-semibold text-blue-600 mb-2">🚂 {trainId}</h4>
-						<div className="space-y-2">
-							{timelineData.timeline[trainId].map((event, idx) => (
-								<div key={idx} className="flex items-center gap-4 text-sm">
-									<div className="w-20 text-gray-500">{event.station_id}</div>
-									<div className="w-24 text-gray-500">{event.section_id}</div>
-									<div className="w-20 text-blue-600">{event.event_type}</div>
-									<div className="w-24 text-gray-600">{formatTime(event.planned_time)}</div>
-									<div className="w-24 text-gray-600">{formatTime(event.actual_time)}</div>
-									<div className={`w-20 ${getStatusColor(event.status, event.delay_minutes)}`}>
-										{formatDelay(event.delay_minutes)}
-									</div>
-									<div className="w-16 text-gray-500">{event.platform || '-'}</div>
-								</div>
-							))}
-						</div>
-					</div>
-				))}
-			</div>
-		)
-	}
+	// Timeline view removed from Logs page
 
 	return (
 		<div className="p-6 bg-white">
@@ -200,16 +166,7 @@ export default function LogsPage() {
 				>
 					Logs
 				</button>
-				<button
-					className={`px-4 py-2 rounded text-sm font-medium ${
-						viewMode === 'timeline' 
-							? 'bg-blue-600 text-white' 
-							: 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-					}`}
-					onClick={() => setViewMode('timeline')}
-				>
-					Timeline
-				</button>
+				{/* Timeline toggle removed */}
 			</div>
 
 			{loading ? (
@@ -282,15 +239,7 @@ export default function LogsPage() {
 						</div>
 					)}
 
-					{viewMode === 'timeline' && (
-						<div className="p-4">
-							{timelineData ? (
-								<TimelineChart data={timelineData} height={500} />
-							) : (
-								<div className="text-gray-500">No timeline data available</div>
-							)}
-						</div>
-					)}
+					{/* Timeline view removed */}
 				</div>
 			)}
 

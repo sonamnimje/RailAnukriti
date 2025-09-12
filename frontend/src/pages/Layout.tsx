@@ -15,7 +15,7 @@ export default function Layout() {
 				<div className="flex items-center">
 					<Link to="/" className="flex items-center gap-2">
 						<img src="/logo.png" alt="Logo" className="h-8 w-8 object-contain" />
-						<span className="text-2xl font-bold text-blue-800">RailAnukriti(रेलअनुकृति)</span>
+						<span className="text-3xl font-bold text-blue-800">RailAnukriti(रेलअनुकृति)</span>
 					</Link>
 				</div>
 				<nav className="flex items-center gap-4 text-lg justify-center">

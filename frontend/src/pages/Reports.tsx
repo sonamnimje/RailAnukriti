@@ -14,7 +14,7 @@ function BarChart({ data, max, legendLabel = 'value', color = '#ef4444', tooltip
 	const gridLines = [0.25, 0.5, 0.75, 1]
 	const [hoverIdx, setHoverIdx] = useState<number | null>(null)
 	return (
-		<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64">
+		<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-80">
 			<rect x={0} y={0} width={width} height={height} fill="transparent" />
 			{gridLines.map((g, i) => {
 				const y = padding.top + chartH * g
@@ -81,7 +81,7 @@ function LineChart({ series, labels, max, legendLabel = 'series', color = '#34d3
 		setHoverIdx(idx)
 	}
 	return (
-		<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64">
+		<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-80">
 			{gridLines.map((g, i) => {
 				const y = padding.top + chartH * g
 				return <line key={i} x1={padding.left} x2={width - padding.right} y1={y} y2={y} stroke="#374151" strokeDasharray="4 4" />
@@ -146,7 +146,7 @@ function Heatmap({ data, xLabels, yLabels, max }: { data: number[][]; xLabels: s
 	}
 
 	return (
-		<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-64">
+		<svg viewBox={`0 0 ${width} ${height}`} className="w-full h-80">
 			<rect x={0} y={0} width={width} height={height} fill="transparent" />
 			{data.map((row, r) => row.map((v, c) => {
 				const x = padding.left + c * cellW

@@ -67,11 +67,11 @@ def migrate_database():
             conn.execute(text("CREATE INDEX IF NOT EXISTS idx_train_logs_timestamp ON train_logs (timestamp)"))
             
             conn.commit()
-            print("✅ Database migration completed successfully!")
+            print("Database migration completed successfully!")
             
         except Exception as e:
             conn.rollback()
-            print(f"❌ Migration failed: {e}")
+            print(f"Migration failed: {e}")
             raise
 
 if __name__ == "__main__":

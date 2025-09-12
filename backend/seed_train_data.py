@@ -135,7 +135,7 @@ def seed_data():
             db.add(position)
         
         db.commit()
-        print("✅ Successfully seeded database with sample train data")
+        print("Successfully seeded database with sample train data")
         print(f"   - {len(trains)} trains")
         print(f"   - {len(stations)} stations")
         print(f"   - {len(schedules)} schedules")
@@ -144,7 +144,7 @@ def seed_data():
         
     except Exception as e:
         db.rollback()
-        print(f"❌ Error seeding database: {e}")
+        print(f"Error seeding database: {e}")
         raise
     finally:
         db.close()

@@ -7,6 +7,7 @@ import {
 	type SimulationResult,
 	type DisruptionType 
 } from '../lib/api';
+import DigitalTwinMap from '../components/DigitalTwinMap';
 
 // Predefined disruption scenarios
 const PREDEFINED_SCENARIOS: SimulationScenario[] = [
@@ -215,139 +216,7 @@ function ScenarioSelectionPanel({
 	);
 }
 
-// Digital twin simulation map
-function SimulationMap({ 
-	simulationResult, 
-	isRunning 
-}: { 
-	simulationResult: SimulationResult | null;
-	isRunning: boolean;
-}) {
-	// Mock train positions for visualization
-	const mockTrains = [
-		{ id: 'T001-Local', position: 20, type: 'local' },
-		{ id: 'T002-Express', position: 45, type: 'express' },
-		{ id: 'T003-Freight', position: 70, type: 'freight' },
-		{ id: 'T004-Local', position: 85, type: 'local' }
-	];
-
-	const getTrainIcon = (type: string) => {
-		switch (type) {
-			case 'express': return '🚄';
-			case 'freight': return '🚛';
-			default: return '🚆';
-		}
-	};
-
-	const getTrainColor = (type: string) => {
-		switch (type) {
-			case 'express': return 'bg-red-500';
-			case 'freight': return 'bg-purple-500';
-			default: return 'bg-green-500';
-		}
-	};
-
-	const isTrainImpacted = (trainId: string) => {
-		return simulationResult?.impacted_trains.includes(trainId) || false;
-	};
-
-	// Arrange trains into vertical lanes to avoid overlap when clustered
-	const lanesTop = ['26%', '34%', '42%'];
-	const minGapPercent = 8; // minimum horizontal gap between trains on the same lane
-	const trainsWithLanes = (() => {
-		const lastPositionByLane = Array(lanesTop.length).fill(-Infinity) as number[];
-		return [...mockTrains]
-			.sort((a, b) => a.position - b.position)
-			.map((train) => {
-				let assignedLane = 0;
-				for (let i = 0; i < lanesTop.length; i++) {
-					if (train.position - lastPositionByLane[i] >= minGapPercent) {
-						assignedLane = i;
-						break;
-					}
-				}
-				lastPositionByLane[assignedLane] = train.position;
-				return { ...train, lane: assignedLane } as typeof train & { lane: number };
-			});
-	})();
-
-	return (
-		<div className="bg-white rounded-2xl p-6 shadow flex-1 min-w-[500px]">
-			<div className="text-xl font-semibold text-violet-700 mb-4">
-				🗺️ Digital Twin: Simulation Map
-				{isRunning && <span className="ml-2 text-sm text-orange-600">(Running...)</span>}
-			</div>
-			
-			<div className="relative h-64 flex flex-col justify-center items-center border rounded-xl bg-gray-50">
-				{/* Track line */}
-				<div className="absolute left-10 right-10 top-1/2 h-2 bg-gray-400 rounded" style={{ zIndex: 0 }} />
-				
-				{/* Stations */}
-				<div className="absolute left-10 top-1/2 -translate-y-1/2 flex flex-col items-center" style={{zIndex: 1}}>
-					<div className="w-6 h-6 rounded-full bg-blue-700" />
-					<span className="text-xs mt-1 font-semibold">Station A</span>
-				</div>
-				<div className="absolute right-10 top-1/2 -translate-y-1/2 flex flex-col items-center" style={{zIndex: 1}}>
-					<div className="w-6 h-6 rounded-full bg-blue-700" />
-					<span className="text-xs mt-1 font-semibold">Station B</span>
-				</div>
-				
-				{/* Trains */}
-				{trainsWithLanes.map((train) => {
-					// Keep trains away from station markers (left/right 10%) and reduce overlap
-					const rawPosition = 10 + train.position;
-					const clampedPosition = Math.min(88, Math.max(12, rawPosition));
-					const verticalOffset = lanesTop[train.lane] || '34%';
-					return (
-						<div
-							key={train.id}
-							className={`absolute flex flex-col items-center transition-all duration-500 ${
-								isTrainImpacted(train.id) ? 'animate-pulse' : ''
-							}`}
-							style={{ 
-								left: `calc(${clampedPosition}% - 20px)`,
-								top: verticalOffset,
-								zIndex: 2
-							}}
-						>
-							<div className={`w-10 h-10 rounded-lg ${getTrainColor(train.type)} flex items-center justify-center text-white text-2xl border-2 border-white shadow ${
-								isTrainImpacted(train.id) ? 'ring-4 ring-red-300' : ''
-							}`}>
-								{getTrainIcon(train.type)}
-							</div>
-							<span className={`text-xs mt-1 font-semibold whitespace-nowrap ${
-								isTrainImpacted(train.id) ? 'text-red-600' : 'text-gray-700'
-							}`}>
-								{train.id}
-								{isTrainImpacted(train.id) && <span className="block text-red-500">⚠️ Impacted</span>}
-							</span>
-						</div>
-					)
-				})}
-			</div>
-			
-			{/* Legend */}
-			<div className="mt-4 flex justify-center space-x-6 text-xs">
-				<div className="flex items-center gap-1">
-					<div className="w-3 h-3 bg-green-500 rounded"></div>
-					<span>Local</span>
-				</div>
-				<div className="flex items-center gap-1">
-					<div className="w-3 h-3 bg-red-500 rounded"></div>
-					<span>Express</span>
-				</div>
-				<div className="flex items-center gap-1">
-					<div className="w-3 h-3 bg-purple-500 rounded"></div>
-					<span>Freight</span>
-				</div>
-				<div className="flex items-center gap-1">
-					<div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-					<span>Impacted</span>
-				</div>
-			</div>
-		</div>
-	);
-}
+// Digital twin map is rendered via DigitalTwinMap component
 
 // Predicted outcomes panel
 function PredictedOutcomesPanel({ 
@@ -719,10 +588,7 @@ export default function SimulationPage() {
 
 				{/* Center panel: Simulation map */}
 				<div className="lg:col-span-1">
-					<SimulationMap
-						simulationResult={simulationResult}
-						isRunning={isRunning}
-					/>
+					<DigitalTwinMap />
 				</div>
 
 				{/* Right panel: Predicted outcomes */}
