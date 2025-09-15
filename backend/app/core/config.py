@@ -20,20 +20,22 @@ class Settings:
 	DB_USER: str = os.getenv("DB_USER", "postgres")
 	DB_PASSWORD: str = os.getenv("DB_PASSWORD", "postgres")
 	DB_NAME: str = os.getenv("DB_NAME", "rail")
+	# Optional explicit path for SQLite files (useful on platforms with read-only project dirs)
+	SQLITE_PATH: str | None = os.getenv("SQLITE_PATH")
 
 	SQLALCHEMY_ECHO: bool = os.getenv("SQLALCHEMY_ECHO", "false").lower() == "true"
 
 	@property
 	def sync_database_uri(self) -> str:
 		if self.DB_TYPE == "sqlite":
-			db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f"{self.DB_NAME}.db")
+			db_path = self.SQLITE_PATH or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f"{self.DB_NAME}.db")
 			return f"sqlite:///{db_path}"
 		return f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
 	@property
 	def async_database_uri(self) -> str:
 		if self.DB_TYPE == "sqlite":
-			db_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f"{self.DB_NAME}.db")
+			db_path = self.SQLITE_PATH or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f"{self.DB_NAME}.db")
 			return f"sqlite+aiosqlite:///{db_path}"
 		return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 

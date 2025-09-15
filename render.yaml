@@ -13,9 +13,7 @@ services:
         value: prod
       - key: DB_TYPE
         value: sqlite
-    disk:
-      name: data
-      mountPath: /opt/render/project/src/backend/app
-      sizeGB: 1
+      - key: SQLITE_PATH
+        value: /tmp/rail.db
 
 
