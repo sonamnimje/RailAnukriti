@@ -33,8 +33,9 @@ class Settings:
 				db_path = self.SQLITE_PATH
 			else:
 				is_render = os.getenv("RENDER") is not None
+				# On Render, the writable location is /tmp; avoid /var/data which may be readonly
 				if is_render or self.ENV != "dev":
-					base_dir = "/var/data"
+					base_dir = "/tmp"
 				else:
 					base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 				db_path = os.path.join(base_dir, f"{self.DB_NAME}.db")
@@ -50,8 +51,9 @@ class Settings:
 				db_path = self.SQLITE_PATH
 			else:
 				is_render = os.getenv("RENDER") is not None
+				# On Render, the writable location is /tmp; avoid /var/data which may be readonly
 				if is_render or self.ENV != "dev":
-					base_dir = "/var/data"
+					base_dir = "/tmp"
 				else:
 					base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 				db_path = os.path.join(base_dir, f"{self.DB_NAME}.db")
