@@ -17,7 +17,7 @@ from __future__ import annotations
 import argparse
 from typing import Any, Dict, List, Type
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, select, func
 from sqlalchemy.orm import Session
 
 # Import models and Base
@@ -61,6 +61,14 @@ def migrate(sqlite_url: str, postgres_url: str) -> None:
     Base.metadata.create_all(bind=dst_engine)
 
     with Session(src_engine) as src_sess, Session(dst_engine) as dst_sess:
+        # If destination already has data, skip migration to avoid duplicates
+        # Check a couple of core tables
+        existing_users = dst_sess.execute(select(func.count()).select_from(User)).scalar_one()
+        existing_trains = dst_sess.execute(select(func.count()).select_from(Train)).scalar_one()
+        if (existing_users or existing_trains):
+            print("Destination already contains data; skipping migration.")
+            return
+
         # Order matters due to FKs
         copy_order: List[Type[Base]] = [
             User,
