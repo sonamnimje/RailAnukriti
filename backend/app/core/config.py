@@ -28,14 +28,34 @@ class Settings:
 	@property
 	def sync_database_uri(self) -> str:
 		if self.DB_TYPE == "sqlite":
-			db_path = self.SQLITE_PATH or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f"{self.DB_NAME}.db")
+			# Prefer explicit SQLITE_PATH. On Render or non-dev, default to /var/data which is writable.
+			if self.SQLITE_PATH:
+				db_path = self.SQLITE_PATH
+			else:
+				is_render = os.getenv("RENDER") is not None
+				if is_render or self.ENV != "dev":
+					base_dir = "/var/data"
+				else:
+					base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+				db_path = os.path.join(base_dir, f"{self.DB_NAME}.db")
+			# Ensure directory exists to avoid OperationalError on first run
+			os.makedirs(os.path.dirname(db_path), exist_ok=True)
 			return f"sqlite:///{db_path}"
 		return f"postgresql+psycopg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
 	@property
 	def async_database_uri(self) -> str:
 		if self.DB_TYPE == "sqlite":
-			db_path = self.SQLITE_PATH or os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), f"{self.DB_NAME}.db")
+			if self.SQLITE_PATH:
+				db_path = self.SQLITE_PATH
+			else:
+				is_render = os.getenv("RENDER") is not None
+				if is_render or self.ENV != "dev":
+					base_dir = "/var/data"
+				else:
+					base_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+				db_path = os.path.join(base_dir, f"{self.DB_NAME}.db")
+			os.makedirs(os.path.dirname(db_path), exist_ok=True)
 			return f"sqlite+aiosqlite:///{db_path}"
 		return f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
 
