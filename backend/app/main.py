@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .api.routes import ingest, optimizer, simulator, overrides, ws, users, reports, train_logs
-from .db.session import engine
+from .db.session import engine, SessionLocal
 from .db.models import Base
 from sqlalchemy import text
 import os
@@ -59,6 +59,21 @@ def create_app() -> FastAPI:
 
 		# Ensure tables exist on current engine
 		Base.metadata.create_all(bind=engine)
+
+		# Optional: seed demo data once if enabled and database appears empty
+		if os.getenv("SEED_ON_STARTUP", "false").lower() == "true":
+			try:
+				from app.db.models import Train, TrainSchedule, TrainLog
+				from seed_train_data import seed_data
+				with SessionLocal() as db:
+					trains_count = db.query(Train).count()
+					schedules_count = db.query(TrainSchedule).count()
+					logs_count = db.query(TrainLog).count()
+					if trains_count == 0 and schedules_count == 0 and logs_count == 0:
+						seed_data()
+			except Exception:
+				# Never block startup on seed issues
+				pass
 		# Lightweight migration: ensure overrides.ai_action exists (SQLite-safe)
 		with engine.connect() as conn:
 			try:
