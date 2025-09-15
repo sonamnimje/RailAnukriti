@@ -8,7 +8,8 @@
     {
       "source": "/api/(.*)",
       "destination": "https://rail-backend.onrender.com/api/$1"
-    }
+    },
+    { "source": "/(.*)", "destination": "/index.html" }
   ],
   "build": {
     "env": {
