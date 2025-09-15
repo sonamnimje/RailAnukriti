@@ -5,6 +5,15 @@ from .api.routes import ingest, optimizer, simulator, overrides, ws, users, repo
 from .db.session import engine
 from .db.models import Base
 from sqlalchemy import text
+import os
+
+from .core.config import settings
+
+# When running from backend/ (Render rootDir), this import is available
+try:
+	from migrate_sqlite_to_postgres import migrate as migrate_sqlite_to_pg
+except Exception:
+	migrate_sqlite_to_pg = None  # type: ignore
 
 
 def create_app() -> FastAPI:
@@ -35,6 +44,20 @@ def create_app() -> FastAPI:
 	# Ensure database tables exist on startup
 	@app.on_event("startup")
 	def on_startup() -> None:
+		# If using Postgres on Render, attempt a one-time SQLite -> Postgres migration
+		# This is safe to run repeatedly; the migration is idempotent and will skip if dest has data
+		if settings.DB_TYPE == "postgresql" and migrate_sqlite_to_pg is not None:
+			try:
+				# Default location of local SQLite when running from backend/
+				sqlite_path = os.getenv("SQLITE_SOURCE_PATH", "app/rail.db")
+				postgres_url = os.getenv("DATABASE_URL")
+				if postgres_url and os.path.exists(sqlite_path):
+					migrate_sqlite_to_pg(f"sqlite:///{sqlite_path}", postgres_url)
+			except Exception:
+				# Never block startup on migration issues
+				pass
+
+		# Ensure tables exist on current engine
 		Base.metadata.create_all(bind=engine)
 		# Lightweight migration: ensure overrides.ai_action exists (SQLite-safe)
 		with engine.connect() as conn:

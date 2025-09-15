@@ -7,7 +7,6 @@ services:
     startCommand: "gunicorn -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:$PORT app.main:app"
     plan: free
     region: oregon
-    preDeployCommand: "python migrate_sqlite_to_postgres.py --sqlite app/rail.db --postgres $DATABASE_URL"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
