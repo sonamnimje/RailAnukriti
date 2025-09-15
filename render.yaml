@@ -2,14 +2,10 @@ services:
   - type: web
     name: rail-backend
     env: python
-    buildCommand: "pip install fastapi uvicorn[standard] gunicorn SQLAlchemy aiosqlite python-dotenv orjson python-jose ecdsa pyasn1 passlib[bcrypt] redis websockets python-multipart --no-cache-dir"
+    buildCommand: "pip install -r backend/requirements.txt && pip install gunicorn --no-cache-dir"
     startCommand: "cd backend && gunicorn -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:$PORT app.main:app"
     plan: free
     region: oregon
-    disk:
-      name: rail-sqlite-disk
-      mountPath: /var/data
-      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
@@ -18,6 +14,6 @@ services:
       - key: DB_TYPE
         value: sqlite
       - key: SQLITE_PATH
-        value: /var/data/rail.db
+        value: /tmp/rail.db
 
 
