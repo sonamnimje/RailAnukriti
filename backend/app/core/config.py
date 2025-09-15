@@ -22,11 +22,21 @@ class Settings:
 	DB_NAME: str = os.getenv("DB_NAME", "rail")
 	# Optional explicit path for SQLite files (useful on platforms with read-only project dirs)
 	SQLITE_PATH: str | None = os.getenv("SQLITE_PATH")
+	# Full SQLAlchemy URL for managed DBs
+	DATABASE_URL: str | None = os.getenv("DATABASE_URL")
 
 	SQLALCHEMY_ECHO: bool = os.getenv("SQLALCHEMY_ECHO", "false").lower() == "true"
 
 	@property
 	def sync_database_uri(self) -> str:
+		# Prefer a provided DATABASE_URL when not using sqlite
+		if self.DATABASE_URL and self.DB_TYPE != "sqlite":
+			url = self.DATABASE_URL
+			if url.startswith("postgres://"):
+				url = "postgresql+psycopg://" + url[len("postgres://"):]
+			if url.startswith("postgresql://"):
+				url = "postgresql+psycopg://" + url[len("postgresql://"):]
+			return url
 		if self.DB_TYPE == "sqlite":
 			# Prefer explicit SQLITE_PATH. On Render or non-dev, default to /var/data which is writable.
 			if self.SQLITE_PATH:
@@ -46,6 +56,14 @@ class Settings:
 
 	@property
 	def async_database_uri(self) -> str:
+		# Prefer a provided DATABASE_URL for async as well
+		if self.DATABASE_URL and self.DB_TYPE != "sqlite":
+			url = self.DATABASE_URL
+			if url.startswith("postgres://"):
+				url = "postgresql+asyncpg://" + url[len("postgres://"):]
+			if url.startswith("postgresql://"):
+				url = "postgresql+asyncpg://" + url[len("postgresql://"):]
+			return url
 		if self.DB_TYPE == "sqlite":
 			if self.SQLITE_PATH:
 				db_path = self.SQLITE_PATH
