@@ -12,8 +12,31 @@ services:
       - key: ENV
         value: prod
       - key: DB_TYPE
-        value: sqlite
-      - key: SQLITE_PATH
-        value: /tmp/rail.db
+        value: postgresql
+      - key: DB_HOST
+        fromDatabase:
+          name: rail-db
+          property: host
+      - key: DB_PORT
+        fromDatabase:
+          name: rail-db
+          property: port
+      - key: DB_USER
+        fromDatabase:
+          name: rail-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: rail-db
+          property: password
+      - key: DB_NAME
+        fromDatabase:
+          name: rail-db
+          property: database
+
+databases:
+  - name: rail-db
+    plan: free
+    region: oregon
 
 
