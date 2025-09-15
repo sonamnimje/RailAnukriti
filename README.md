@@ -1,3 +1,5 @@
+# 👉 Live link: https://rail-anukriti-7u8e.vercel.app/
+
 # 🚆 RailAnukriti – AI-Powered Smart Train Traffic Optimizer
 RailAnukriti is an AI-powered decision-support system for Indian Railways section controllers.  
 It optimizes train precedence, crossings, and platform allocation to maximize throughput and minimize delays.
