@@ -20,7 +20,10 @@ function useWebSocket(url: string) {
 }
 
 export default function App() {
-	const { status, lastMessage } = useWebSocket(`ws://${location.hostname}:8000/ws/live`)
+	const WS_BASE = (import.meta as any).env?.VITE_WS_URL || ''
+	const defaultWsProto = typeof location !== 'undefined' && location.protocol === 'https:' ? 'wss' : 'ws'
+	const wsUrl = WS_BASE || (typeof location !== 'undefined' ? `${defaultWsProto}://${location.hostname}:8000/ws/live` : '')
+	const { status, lastMessage } = useWebSocket(wsUrl)
 	const [recs, setRecs] = useState<Recommendation[]>([])
 	const [loading, setLoading] = useState(false)
 	const [error, setError] = useState<string | null>(null)
