@@ -15,6 +15,10 @@ services:
         value: prod
       - key: DB_TYPE
         value: postgresql
+      - key: DATABASE_URL
+        fromDatabase:
+          name: rail-db
+          property: connectionString
       - key: DB_HOST
         fromDatabase:
           name: rail-db
