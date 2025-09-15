@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: rail-backend
+    env: python
+    buildCommand: "pip install -r backend/requirements.txt && pip install gunicorn"
+    startCommand: "cd backend && gunicorn -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:$PORT app.main:app"
+    plan: free
+    region: oregon
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: ENV
+        value: prod
+      - key: DB_TYPE
+        value: sqlite
+    disk:
+      name: data
+      mountPath: /opt/render/project/src/backend/app
+      sizeGB: 1
+
+

@@ -1,0 +1,24 @@
+{
+  "version": 2,
+  "name": "rail-anukriti-frontend",
+  "builds": [
+    { "src": "frontend/package.json", "use": "@vercel/static-build", "config": { "distDir": "dist" } }
+  ],
+  "proxies": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://rail-backend.onrender.com/api/$1"
+    },
+    {
+      "source": "/ws/(.*)",
+      "destination": "wss://rail-backend.onrender.com/ws/$1"
+    }
+  ],
+  "build": {
+    "env": {
+      "CI": "true"
+    }
+  }
+}
+
+
