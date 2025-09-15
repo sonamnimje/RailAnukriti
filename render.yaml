@@ -6,6 +6,10 @@ services:
     startCommand: "cd backend && gunicorn -k uvicorn.workers.UvicornWorker -w 2 -b 0.0.0.0:$PORT app.main:app"
     plan: free
     region: oregon
+    disk:
+      name: rail-sqlite-disk
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
@@ -14,6 +18,6 @@ services:
       - key: DB_TYPE
         value: sqlite
       - key: SQLITE_PATH
-        value: /tmp/rail.db
+        value: /var/data/rail.db
 
 
