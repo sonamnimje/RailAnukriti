@@ -66,11 +66,22 @@ def create_app() -> FastAPI:
 				from app.db.models import Train, TrainSchedule, TrainLog
 				from seed_train_data import seed_data
 				with SessionLocal() as db:
-					trains_count = db.query(Train).count()
-					schedules_count = db.query(TrainSchedule).count()
-					logs_count = db.query(TrainLog).count()
-					if trains_count == 0 and schedules_count == 0 and logs_count == 0:
-						seed_data()
+					# Acquire DB-level advisory lock to prevent concurrent seeding
+					try:
+						lock_acquired = db.execute(text("SELECT pg_try_advisory_lock( hashtext('rail_seed_lock') )")).scalar()
+					except Exception:
+						lock_acquired = True  # On SQLite or if advisory lock unsupported
+					if lock_acquired:
+						trains_count = db.query(Train).count()
+						schedules_count = db.query(TrainSchedule).count()
+						logs_count = db.query(TrainLog).count()
+						if trains_count == 0 and schedules_count == 0 and logs_count == 0:
+							seed_data()
+						# Release lock if Postgres
+						try:
+							db.execute(text("SELECT pg_advisory_unlock( hashtext('rail_seed_lock') )"))
+						except Exception:
+							pass
 			except Exception:
 				# Never block startup on seed issues
 				pass
