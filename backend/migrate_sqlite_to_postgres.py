@@ -43,7 +43,17 @@ def _rows_to_dicts(session: Session, model_cls: Type[Base]) -> List[Dict[str, An
     return rows
 
 
+def _normalize_postgres_url(url: str) -> str:
+    # Accept postgres:// and postgresql://; prefer SQLAlchemy psycopg driver
+    if url.startswith("postgres://"):
+        return "postgresql+psycopg://" + url[len("postgres://") :]
+    if url.startswith("postgresql://"):
+        return "postgresql+psycopg://" + url[len("postgresql://") :]
+    return url
+
+
 def migrate(sqlite_url: str, postgres_url: str) -> None:
+    postgres_url = _normalize_postgres_url(postgres_url)
     src_engine = create_engine(sqlite_url, future=True)
     dst_engine = create_engine(postgres_url, future=True)
 
@@ -97,7 +107,7 @@ def main() -> None:
     if sqlite_url.endswith(".db") and not sqlite_url.startswith("sqlite:///"):
         sqlite_url = f"sqlite:///{sqlite_url}"
 
-    migrate(sqlite_url, args.postgres)
+    migrate(sqlite_url, _normalize_postgres_url(args.postgres))
 
 
 if __name__ == "__main__":
