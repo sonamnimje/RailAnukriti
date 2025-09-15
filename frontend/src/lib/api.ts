@@ -14,8 +14,11 @@ export type Recommendation = {
 	priority_score?: number
 }
 
+const API_BASE = (import.meta as any).env?.VITE_API_URL || ''
+const apiBaseUrl = API_BASE || (typeof location !== 'undefined' ? `${location.protocol}//${location.hostname}:8000` : '')
+
 export async function fetchRecommendations(req: OptimizeRequest) {
-	const res = await fetch(`http://${location.hostname}:8000/api/optimizer/optimize`, {
+	const res = await fetch(`${apiBaseUrl}/api/optimizer/optimize`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 		body: JSON.stringify(req),
@@ -32,7 +35,7 @@ export async function applyOverride(payload: {
 	reason?: string
 	timestamp: number
 }) {
-	const res = await fetch(`http://${location.hostname}:8000/api/overrides/apply`, {
+	const res = await fetch(`${apiBaseUrl}/api/overrides/apply`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 		body: JSON.stringify(payload),
@@ -42,7 +45,7 @@ export async function applyOverride(payload: {
 }
 
 export async function fetchOverrides() {
-	const res = await fetch(`http://${location.hostname}:8000/api/overrides/logs`, {
+	const res = await fetch(`${apiBaseUrl}/api/overrides/logs`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) {
@@ -53,7 +56,7 @@ export async function fetchOverrides() {
 }
 
 export async function fetchSchedules() {
-	const res = await fetch(`http://${location.hostname}:8000/api/ingest/schedules`, {
+	const res = await fetch(`${apiBaseUrl}/api/ingest/schedules`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) throw new Error('Failed to fetch schedules')
@@ -61,7 +64,7 @@ export async function fetchSchedules() {
 }
 
 export async function fetchPositions() {
-	const res = await fetch(`http://${location.hostname}:8000/api/ingest/positions`, {
+	const res = await fetch(`${apiBaseUrl}/api/ingest/positions`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) throw new Error('Failed to fetch positions')
@@ -69,7 +72,7 @@ export async function fetchPositions() {
 }
 
 export async function fetchKpis() {
-	const res = await fetch(`http://${location.hostname}:8000/api/reports/kpis`, {
+	const res = await fetch(`${apiBaseUrl}/api/reports/kpis`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) throw new Error('Failed to fetch KPIs')
@@ -77,7 +80,7 @@ export async function fetchKpis() {
 }
 
 export async function fetchDelayTrends(hours = 24) {
-	const res = await fetch(`http://${location.hostname}:8000/api/reports/delay_trends?hours=${hours}`, {
+	const res = await fetch(`${apiBaseUrl}/api/reports/delay_trends?hours=${hours}`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) throw new Error('Failed to fetch delay trends')
@@ -85,7 +88,7 @@ export async function fetchDelayTrends(hours = 24) {
 }
 
 export async function fetchThroughput(hours = 24) {
-	const res = await fetch(`http://${location.hostname}:8000/api/reports/throughput?hours=${hours}`, {
+	const res = await fetch(`${apiBaseUrl}/api/reports/throughput?hours=${hours}`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) throw new Error('Failed to fetch throughput')
@@ -93,7 +96,7 @@ export async function fetchThroughput(hours = 24) {
 }
 
 export async function fetchHotspots(hours = 24, top_sections = 4, buckets = 5) {
-	const res = await fetch(`http://${location.hostname}:8000/api/reports/hotspots?hours=${hours}&top_sections=${top_sections}&buckets=${buckets}`, {
+	const res = await fetch(`${apiBaseUrl}/api/reports/hotspots?hours=${hours}&top_sections=${top_sections}&buckets=${buckets}`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) throw new Error('Failed to fetch hotspots')
@@ -104,7 +107,7 @@ export async function login(username: string, password: string) {
 	const form = new URLSearchParams()
 	form.append('username', username)
 	form.append('password', password)
-	const res = await fetch(`http://${location.hostname}:8000/api/users/login`, {
+	const res = await fetch(`${apiBaseUrl}/api/users/login`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 		body: form.toString(),
@@ -116,7 +119,7 @@ export async function login(username: string, password: string) {
 }
 
 export async function fetchMe() {
-	const res = await fetch(`http://${location.hostname}:8000/api/users/me`, {
+	const res = await fetch(`${apiBaseUrl}/api/users/me`, {
 		headers: { Authorization: `Bearer ${localStorage.getItem('token') || ''}` },
 	})
 	if (!res.ok) throw new Error('Unauthorized')
@@ -125,7 +128,7 @@ export async function fetchMe() {
 
 
 export async function signup(username: string, password: string, role: 'controller' | 'admin' = 'controller') {
-	const res = await fetch(`http://${location.hostname}:8000/api/users/signup`, {
+	const res = await fetch(`${apiBaseUrl}/api/users/signup`, {
 		method: 'POST',
 		headers: { 'Content-Type': 'application/json' },
 		body: JSON.stringify({ username, password, role }),
@@ -181,7 +184,7 @@ export type SimulationResult = {
 
 export async function runSimulation(scenario: SimulationScenario): Promise<SimulationResult> {
 	console.log('API call to runSimulation with:', scenario);
-	const res = await fetch(`http://${location.hostname}:8000/api/simulator/run`, {
+	const res = await fetch(`${apiBaseUrl}/api/simulator/run`, {
 		method: 'POST',
 		headers: { 
 			'Content-Type': 'application/json', 
@@ -214,7 +217,7 @@ export async function applySimulationToReal(simulationId: string): Promise<{
 		notifications_sent: string[];
 	}
 }> {
-	const res = await fetch(`http://${location.hostname}:8000/api/simulator/apply`, {
+	const res = await fetch(`${apiBaseUrl}/api/simulator/apply`, {
 		method: 'POST',
 		headers: { 
 			'Content-Type': 'application/json', 
@@ -307,7 +310,7 @@ export async function fetchTrainLogs(params: {
 		if (value !== undefined) searchParams.append(key, value.toString())
 	})
 	
-	const res = await fetch(`http://${location.hostname}:8000/api/train-logs/logs?${searchParams}`)
+	const res = await fetch(`${apiBaseUrl}/api/train-logs/logs?${searchParams}`)
 	if (!res.ok) throw new Error('Failed to fetch train logs')
 	return (await res.json()) as { logs: TrainLog[]; total: number }
 }
@@ -324,7 +327,7 @@ export async function fetchTrainSchedules(params: {
 		if (value !== undefined) searchParams.append(key, value.toString())
 	})
 	
-	const res = await fetch(`http://${location.hostname}:8000/api/train-logs/schedules?${searchParams}`)
+	const res = await fetch(`${apiBaseUrl}/api/train-logs/schedules?${searchParams}`)
 	if (!res.ok) throw new Error('Failed to fetch train schedules')
 	return (await res.json()) as { schedules: TrainSchedule[]; total: number }
 }
@@ -339,13 +342,13 @@ export async function fetchTimelineData(params: {
 		if (value !== undefined) searchParams.append(key, value.toString())
 	})
 	
-	const res = await fetch(`http://${location.hostname}:8000/api/train-logs/timeline?${searchParams}`)
+	const res = await fetch(`${apiBaseUrl}/api/train-logs/timeline?${searchParams}`)
 	if (!res.ok) throw new Error('Failed to fetch timeline data')
 	return (await res.json()) as TimelineData
 }
 
 export async function fetchLogStats(hours = 24) {
-	const res = await fetch(`http://${location.hostname}:8000/api/train-logs/stats?hours=${hours}`)
+	const res = await fetch(`${apiBaseUrl}/api/train-logs/stats?hours=${hours}`)
 	if (!res.ok) throw new Error('Failed to fetch log stats')
 	return (await res.json()) as LogStats
 }
