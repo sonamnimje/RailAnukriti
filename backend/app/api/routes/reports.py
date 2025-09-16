@@ -28,24 +28,35 @@ def get_kpis(db: Session = Depends(get_db)) -> dict:
 def delay_trends(hours: int = Query(24, ge=1, le=168), db: Session = Depends(get_db)) -> dict:
     now = datetime.now(timezone.utc)
     start = now - timedelta(hours=hours)
-    # We don't have explicit delay; approximate trend using average speed drop proxy per hour
-    # Compute avg speed per hour bucket; convert to a pseudo delay index (higher -> more delay)
+    # Dialect-aware hourly bucketing (SQLite uses strftime; Postgres uses date_trunc)
+    dialect = db.bind.dialect.name if db.bind is not None else "sqlite"
+    if dialect == "postgresql":
+        bucket_col = func.date_trunc('hour', TrainPosition.timestamp).label('bucket')
+    else:
+        bucket_col = func.strftime('%Y-%m-%d %H:00', TrainPosition.timestamp).label('bucket')
+
     hour_buckets = (
         db.query(
-            func.strftime('%Y-%m-%d %H:00', TrainPosition.timestamp).label('bucket'),
+            bucket_col,
             func.avg(TrainPosition.speed_kmph).label('avg_speed'),
             func.count().label('cnt'),
         )
         .filter(TrainPosition.timestamp >= start)
-        .group_by('bucket')
-        .order_by('bucket')
+        .group_by(bucket_col)
+        .order_by(bucket_col)
         .all()
     )
-    # Build continuous buckets across the window
+
+    # Normalize bucket keys to a consistent hour string
+    def normalize_bucket(b: object) -> str:
+        if isinstance(b, datetime):
+            return b.replace(minute=0, second=0, microsecond=0, tzinfo=timezone.utc if b.tzinfo else None).strftime('%Y-%m-%d %H:00')
+        return str(b)
+
     labels: list[str] = []
     series: list[float] = []
-    bucket_to_speed = {b.bucket: (b.avg_speed or 0.0) for b in hour_buckets}
-    # Normalize to a delay index: slower speed -> higher delay; scale 0-10
+    bucket_to_speed = {normalize_bucket(row.bucket): float(row.avg_speed or 0.0) for row in hour_buckets}
+
     speeds = [v for v in bucket_to_speed.values() if v is not None]
     max_speed = max(speeds) if speeds else 1.0
     t = start.replace(minute=0, second=0, microsecond=0)
