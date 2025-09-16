@@ -14,8 +14,18 @@ export type Recommendation = {
 	priority_score?: number
 }
 
-const API_BASE = (import.meta as any).env?.VITE_API_URL || ''
-const apiBaseUrl = API_BASE || (typeof location !== 'undefined' ? `${location.protocol}//${location.hostname}:8000` : '')
+// Resolve API base URL with safe fallbacks:
+// 1) Use VITE_API_URL when provided
+// 2) Use localhost:8000 during local dev
+// 3) Use hosted backend URL in production deployments
+const API_BASE = ((import.meta as any).env?.VITE_API_URL || '').trim()
+const apiBaseUrl = API_BASE
+  ? API_BASE
+  : (typeof location !== 'undefined'
+      ? ((location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+          ? `${location.protocol}//${location.hostname}:8000`
+          : 'https://railanukriti.onrender.com')
+      : 'https://railanukriti.onrender.com')
 
 export async function fetchRecommendations(req: OptimizeRequest) {
 	const res = await fetch(`${apiBaseUrl}/api/optimizer/optimize`, {
